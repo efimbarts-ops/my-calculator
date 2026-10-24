@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Calc & AI</title>
+    <!-- Подключаем SDK Телеграма -->
+    <script src="https://telegram.org"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1f1f1f; color: white; text-align: center; padding: 20px; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 300px; margin: 20px auto; }
+        button { padding: 15px; font-size: 18px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button.action { background: #007aff; }
+        #display { width: 100%; max-width: 280px; height: 50px; font-size: 24px; text-align: right; margin-bottom: 10px; background: #000; color: #0f0; border: none; padding: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>Инженерный ИИ-Калькулятор</h2>
+    <input type="text" id="display" readonly>
+
+    <div class="calc-grid">
+        <!-- Кнопки тригонометрии -->
+        <button onclick="add('sin(')">sin</button>
+        <button onclick="add('cos(')">cos</button>
+        <button onclick="add('tan(')">tan</button>
+        <button onclick="clearDisplay()" style="background: #ff3b30;">C</button>
+        
+        <!-- Цифры и знаки -->
+        <button onclick="add('7')">7</button><button onclick="add('8')">8</button><button onclick="add('9')">9</button><button onclick="add('/')">/</button>
+        <button onclick="add('4')">4</button><button onclick="add('5')">5</button><button onclick="add('6')">6</button><button onclick="add('*')">*</button>
+        <button onclick="add('1')">1</button><button onclick="add('2')">2</button><button onclick="add('3')">3</button><button onclick="add('-')">-</button>
+        <button onclick="add('0')">0</button><button onclick="add('.')">.</button>
+        <button onclick="calculate()" style="grid-column: span 2; background: #34c759;">=</button>
+    </div>
+
+    <hr style="border: 0.5px solid #444; margin: 30px 0;">
+
+    <!-- Кнопка ИИ-Помощника -->
+    <h3>Решить задачу по фото</h3>
+    <button class="action" onclick="closeAndAskPhoto()" style="width: 80%; padding: 20px; font-size: 20px;">
+        📸 Сфоткать / Из галереи
+    </button>
+
+    <script>
+        // Инициализируем Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Раскрываем на весь экран
+
+        let display = document.getElementById('display');
+
+        function add(val) { display.value += val; }
+        function clearDisplay() { display.value = ''; }
+        function calculate() {
+            try {
+                // Простейший расчет математики (в продакшене лучше использовать math.js)
+                display.value = eval(display.value.replace(/sin\(/g, 'Math.sin(').replace(/cos\(/g, 'Math.cos('));
+            } catch { display.value = 'Ошибка'; }
+        }
+
+        // Кнопка ИИ: закрывает калькулятор и шлет команду боту в чат, чтобы юзер скинул фото
+        function closeAndAskPhoto() {
+            tg.sendData("action_scan_photo"); // Отправляем триггер боту
+            tg.close(); // Закрываем мини-апп
+        }
+    </script>
+</body>
+</html>
