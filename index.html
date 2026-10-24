@@ -6,49 +6,70 @@
     <title>Mega Calc & AI</title>
     <!-- Подключаем SDK Телеграма -->
     <script src="https://telegram.org"></script>
-    <!-- Подключаем мощную математическую библиотеку для подсчетов -->
+    <!-- Подключаем математическую библиотеку -->
     <script src="https://cloudflare.com"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #1f1f1f; color: white; text-align: center; padding: 20px; margin: 0; }
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 320px; margin: 20px auto; }
-        button { padding: 20px; font-size: 18px; background: #333; color: white; border: none; border-radius: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        body { font-family: Arial, sans-serif; background: #1f1f1f; color: white; text-align: center; padding: 15px; margin: 0; }
+        .calc-container { max-width: 340px; margin: 0 auto; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
+        button { padding: 18px 0; font-size: 20px; background: #333; color: white; border: none; border-radius: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         button:active { background: #444; }
-        button.action { background: #007aff; font-weight: bold; }
+        button.operator { background: #ff9f0a; color: white; font-weight: bold; }
+        button.operator:active { background: #cc7f08; }
+        button.action { background: #007aff; font-weight: bold; width: 100%; padding: 18px 0; font-size: 18px; margin-top: 20px; border-radius: 12px; border: none; color: white; }
         button.action:active { background: #0056b3; }
-        #display { width: 100%; max-width: 290px; height: 60px; font-size: 26px; text-align: right; margin: 0 auto 15px auto; background: #000; color: #0f0; border: none; border-radius: 8px; padding: 5px 10px; box-sizing: border-box; }
+        #display { width: 100%; height: 65px; font-size: 28px; text-align: right; background: #000; color: #0f0; border: none; border-radius: 10px; padding: 5px 15px; box-sizing: border-box; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-    <h2>Инженерный ИИ-Калькулятор</h2>
-    <input type="text" id="display" readonly placeholder="0">
+    <div class="calc-container">
+        <h2>ИИ-Калькулятор</h2>
+        <input type="text" id="display" readonly placeholder="0">
 
-    <div class="calc-grid">
-        <!-- Кнопки тригонометрии -->
-        <button onclick="add('sin(')">sin</button>
-        <button onclick="add('cos(')">cos</button>
-        <button onclick="add('tg(')">tg</button>
-        <button onclick="clearDisplay()" style="background: #ff3b30;">C</button>
-        
-        <!-- Цифры и знаки -->
-        <button onclick="add('7')">7</button><button onclick="add('8')">8</button><button onclick="add('9')">9</button><button onclick="add('/')">/</button>
-        <button onclick="add('4')">4</button><button onclick="add('5')">5</button><button onclick="add('6')">6</button><button onclick="add('*')">*</button>
-        <button onclick="add('1')">1</button><button onclick="add('2')">2</button><button onclick="add('3')">3</button><button onclick="add('-')">-</button>
-        <button onclick="add('0')">0</button><button onclick="add('.')">.</button>
-        <button onclick="calculate()" style="grid-column: span 2; background: #34c759;">=</button>
+        <div class="calc-grid">
+            <!-- Строка 1: Функции и Очистка -->
+            <button onclick="add('sin(')">sin</button>
+            <button onclick="add('cos(')">cos</button>
+            <button onclick="add('tg(')">tg</button>
+            <button onclick="clearDisplay()" style="background: #ff3b30;">C</button>
+            
+            <!-- Строка 2: Цифры и Деление -->
+            <button onclick="add('7')">7</button>
+            <button onclick="add('8')">8</button>
+            <button onclick="add('9')">9</button>
+            <button class="operator" onclick="add('/')">/</button>
+            
+            <!-- Строка 3: Цифры и Умножение -->
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button class="operator" onclick="add('*')">*</button>
+            
+            <!-- Строка 4: Цифры и Вычитание -->
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button class="operator" onclick="add('-')">-</button>
+            
+            <!-- Строка 5: Ноль, Точка, Плюс и Равно -->
+            <button onclick="add('0')">0</button>
+            <button onclick="add('.')">.</button>
+            <button class="operator" onclick="add('+')">+</button>
+            <button style="background: #34c759; font-weight: bold;" onclick="calculate()">=</button>
+        </div>
+
+        <hr style="border: 0.5px solid #444; margin: 25px 0;">
+
+        <h3>Решить задачу по фото</h3>
+        <button class="action" onclick="closeAndAskPhoto()">
+            📸 Сфоткать / Из галереи
+        </button>
     </div>
 
-    <hr style="border: 0.5px solid #444; margin: 30px 0;">
-
-    <h3>Решить задачу по фото</h3>
-    <button class="action" onclick="closeAndAskPhoto()" style="width: 90%; padding: 20px; font-size: 20px;">
-        📸 Сфоткать / Из галереи
-    </button>
-
     <script>
-        // Инициализируем Telegram WebApp
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем на весь экран
+        tg.expand();
 
         let display = document.getElementById('display');
 
@@ -62,24 +83,16 @@
 
         function calculate() {
             try {
-                // Переводим наши "tg" в понятные для библиотеки "tan"
                 let expression = display.value.replace(/tg\(/g, 'tan(');
-                
-                // Считаем выражение с помощью библиотеки math.js
                 let result = math.evaluate(expression);
-                
-                // Округляем до 6 знаков, чтобы не было длинных хвостов
-                display.value = math.format(result, {precision: 14});
+                display.value = math.format(result, {precision: 10});
             } catch (error) {
                 display.value = 'Ошибка';
             }
         }
 
-        // Исправленная функция для кнопки фото
         function closeAndAskPhoto() {
-            // Отправляем специальную текстовую команду в чат бота
             tg.sendData("action_scan_photo");
-            // Закрываем окно калькулятора
             tg.close();
         }
     </script>
