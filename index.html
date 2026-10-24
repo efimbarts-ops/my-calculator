@@ -6,24 +6,28 @@
     <title>Mega Calc & AI</title>
     <!-- Подключаем SDK Телеграма -->
     <script src="https://telegram.org"></script>
+    <!-- Подключаем мощную математическую библиотеку для подсчетов -->
+    <script src="https://cloudflare.com"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #1f1f1f; color: white; text-align: center; padding: 20px; }
-        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 300px; margin: 20px auto; }
-        button { padding: 15px; font-size: 18px; background: #333; color: white; border: none; border-radius: 8px; cursor: pointer; }
-        button.action { background: #007aff; }
-        #display { width: 100%; max-width: 280px; height: 50px; font-size: 24px; text-align: right; margin-bottom: 10px; background: #000; color: #0f0; border: none; padding: 5px; }
+        body { font-family: Arial, sans-serif; background: #1f1f1f; color: white; text-align: center; padding: 20px; margin: 0; }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 320px; margin: 20px auto; }
+        button { padding: 20px; font-size: 18px; background: #333; color: white; border: none; border-radius: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        button:active { background: #444; }
+        button.action { background: #007aff; font-weight: bold; }
+        button.action:active { background: #0056b3; }
+        #display { width: 100%; max-width: 290px; height: 60px; font-size: 26px; text-align: right; margin: 0 auto 15px auto; background: #000; color: #0f0; border: none; border-radius: 8px; padding: 5px 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
     <h2>Инженерный ИИ-Калькулятор</h2>
-    <input type="text" id="display" readonly>
+    <input type="text" id="display" readonly placeholder="0">
 
     <div class="calc-grid">
         <!-- Кнопки тригонометрии -->
         <button onclick="add('sin(')">sin</button>
         <button onclick="add('cos(')">cos</button>
-        <button onclick="add('tan(')">tan</button>
+        <button onclick="add('tg(')">tg</button>
         <button onclick="clearDisplay()" style="background: #ff3b30;">C</button>
         
         <!-- Цифры и знаки -->
@@ -36,9 +40,8 @@
 
     <hr style="border: 0.5px solid #444; margin: 30px 0;">
 
-    <!-- Кнопка ИИ-Помощника -->
     <h3>Решить задачу по фото</h3>
-    <button class="action" onclick="closeAndAskPhoto()" style="width: 80%; padding: 20px; font-size: 20px;">
+    <button class="action" onclick="closeAndAskPhoto()" style="width: 90%; padding: 20px; font-size: 20px;">
         📸 Сфоткать / Из галереи
     </button>
 
@@ -49,19 +52,35 @@
 
         let display = document.getElementById('display');
 
-        function add(val) { display.value += val; }
-        function clearDisplay() { display.value = ''; }
-        function calculate() {
-            try {
-                // Простейший расчет математики (в продакшене лучше использовать math.js)
-                display.value = eval(display.value.replace(/sin\(/g, 'Math.sin(').replace(/cos\(/g, 'Math.cos('));
-            } catch { display.value = 'Ошибка'; }
+        function add(val) {
+            display.value += val;
         }
 
-        // Кнопка ИИ: закрывает калькулятор и шлет команду боту в чат, чтобы юзер скинул фото
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function calculate() {
+            try {
+                // Переводим наши "tg" в понятные для библиотеки "tan"
+                let expression = display.value.replace(/tg\(/g, 'tan(');
+                
+                // Считаем выражение с помощью библиотеки math.js
+                let result = math.evaluate(expression);
+                
+                // Округляем до 6 знаков, чтобы не было длинных хвостов
+                display.value = math.format(result, {precision: 14});
+            } catch (error) {
+                display.value = 'Ошибка';
+            }
+        }
+
+        // Исправленная функция для кнопки фото
         function closeAndAskPhoto() {
-            tg.sendData("action_scan_photo"); // Отправляем триггер боту
-            tg.close(); // Закрываем мини-апп
+            // Отправляем специальную текстовую команду в чат бота
+            tg.sendData("action_scan_photo");
+            // Закрываем окно калькулятора
+            tg.close();
         }
     </script>
 </body>
